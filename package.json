@@ -1,12 +1,9 @@
 {
-  "name": "@dosa.dev/j5",
+  "name": "j5-js",
   "version": "0.1.0",
   "description": "k6-style TypeScript DSL for Apache JMeter",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "publishConfig": {
-    "access": "public"
-  },
   "bin": {
     "j5": "./dist/cli/index.js"
   },

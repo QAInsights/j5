@@ -1,239 +1,235 @@
-# jmeter-js
+# j5 🚀
 
-Write JMeter performance tests like k6 — in TypeScript, no GUI, no XML.
+<p align="center">
+  <a href="https://www.npmjs.com/package/j5"><img src="https://img.shields.io/npm/v/j5.svg?style=flat-square&color=33cd56" alt="NPM Version"></a>
+  <a href="https://github.com/QAInsights/j5/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/j5.svg?style=flat-square&color=blue" alt="License"></a>
+  <a href="https://github.com/vitest-dev/vitest"><img src="https://img.shields.io/badge/tested%20with-vitest-db820b.svg?style=flat-square" alt="Tested with Vitest"></a>
+</p>
+
+<p align="center">
+  <b>Write JMeter performance tests like k6</b> — in modern TypeScript, with no GUI, no XML, and native support for lifecycle hooks, scenarios, thresholds, and real-time backend listeners.
+</p>
+
+---
+
+## 🌟 Why j5?
+
+*   **TypeScript/JavaScript First**: Write clean, modular, and type-safe performance scripts. No more clicking through complex Java Swing GUIs.
+*   **Zero XML Boilerplate**: No more editing or merging thousands of lines of fragile `.jmx` XML files.
+*   **k6-Style DSL**: Includes familiar exports like `options` (for VUs, duration, and named scenarios), `setup`/`teardown` hooks, and metric-based `thresholds`.
+*   **Pure Apache JMeter**: Generates standard, optimized, vanilla JMX files. It runs on any vanilla JMeter installation with zero extra plugin requirements.
+
+---
+
+## 🛠️ How It Works
+
+```
+[your-script.ts]  ── j5 compile ──>  [test-plan.jmx]  ── jmeter -n ──>  [results.jtl]
+```
+
+1. **Write**: Define your test scenarios, assertions, think times, and data sets using the `j5` TypeScript API.
+2. **Compile**: `j5` validates your script, executes exports, and serializes the structure into a valid JMeter-compatible JMX file.
+3. **Execute**: JMeter runs headlessly against the generated JMX and outputs native performance metrics to a JTL file.
+
+---
+
+## ⚡ Quick Start
+
+### 1. Installation
+
+```bash
+# Install locally in your project
+npm install --save-dev j5
+```
+
+> **Prerequisite:** [Apache JMeter 5.6+](https://jmeter.apache.org/) must be installed. Make sure `jmeter` is in your system `PATH` or configure `JMETER_HOME`.
+
+### 2. Create your first test script (`simple-test.ts`)
 
 ```typescript
-import { httpSampler, csvDataSet, registerSampler, registerCsv } from "jmeter-js";
-import type { TestOptions } from "jmeter-js";
+import { httpSampler, registerSampler, type TestOptions } from "j5";
 
+// 1. Configure the load profile
 export const options: TestOptions = {
-  vus: 50,
-  rampUp: "1m",
-  duration: "5m",
+  vus: 10,
+  duration: "30s",
 };
 
+// 2. Define the target base URL
 export const baseUrl = "https://api.example.com";
 
-const users = csvDataSet("./data/users.csv", { variableNames: ["username", "password"] });
-registerCsv(users);
-
+// 3. Define the main test execution
 export default function () {
   registerSampler(
     httpSampler
-      .post("Login", "/api/login", { body: { username: users.var("username"), password: users.var("password") } })
-      .jsonExtract("token", "$.token")
+      .get("Get Homepage", "/")
       .assertStatus(200)
-  );
-
-  registerSampler(
-    httpSampler
-      .get("Dashboard", "/api/dashboard", { headers: { Authorization: "Bearer ${token}" } })
-      .assertStatus(200)
-      .assertResponseTime(2000)
   );
 }
 ```
 
-## How it works
-
-```
-your-script.ts  →  jmeter-js run  →  plan.jmx  →  jmeter -n -t plan.jmx  →  results.jtl
-```
-
-1. Your TypeScript script is loaded and executed by the jmeter-js runtime.
-2. DSL calls (`httpSampler`, `csvDataSet`) build an in-memory test plan.
-3. The plan is serialized to a valid JMeter JMX file.
-4. JMeter runs headlessly against the JMX.
-
-No GUI. No XML. Full JMeter engine underneath.
-
----
-
-## Install
+### 3. Run the test
 
 ```bash
-npm install -g jmeter-js
-# or locally
-npm install --save-dev jmeter-js
-```
+# Compile and run via JMeter CLI
+npx j5 run simple-test.ts
 
-**Prerequisites:** Apache JMeter 5.6+ installed. Set `JMETER_HOME` or add `jmeter` to your PATH.
+# Generate JMX XML only (dry-run)
+npx j5 run simple-test.ts --dry-run
+```
 
 ---
 
-## CLI
+## 🚀 Advanced Features Demo
 
-```bash
-# Compile and run
-jmeter-js run my-test.ts
-
-# Generate JMX only (no execution)
-jmeter-js run my-test.ts --dry-run
-
-# Custom output paths
-jmeter-js run my-test.ts --out ./plans/my-test.jmx --jtl ./results/my-test.jtl
-
-# Specify JMeter binary explicitly
-jmeter-js run my-test.ts --jmeter-bin /opt/jmeter/bin/jmeter
-
-# Inspect parsed plan without generating JMX
-jmeter-js inspect my-test.ts
-```
-
-### Flags
-
-| Flag | Description | Default |
-|---|---|---|
-| `--dry-run` | Generate JMX only, skip JMeter execution | `false` |
-| `--out <path>` | Output path for the JMX file | `<script>.jmx` |
-| `--jtl <path>` | Output path for JTL results | `<script>.jtl` |
-| `--jmeter-bin <path>` | Path to JMeter binary | `JMETER_HOME/bin/jmeter` |
-| `--extra-args <args>` | Extra args passed to JMeter CLI (quoted) | `""` |
-
----
-
-## Script structure
-
-Every script must export three things:
+`j5` supports robust scenario executors, custom think times, metrics thresholds, and real-time database endpoints (InfluxDB & Graphite):
 
 ```typescript
-// 1. Load options
+import {
+  httpSampler,
+  registerSampler,
+  sleep,
+  randomSleep,
+  gaussianSleep,
+  group,
+  type TestOptions,
+} from "j5";
+
+export const baseUrl = "https://shop.example.com";
+
 export const options: TestOptions = {
-  vus: 50,           // number of virtual users (threads)
-  rampUp: "1m",      // ramp-up period (optional, default 0s)
-  duration: "5m",    // test duration
-  // iterations: 10  // alternative to duration
+  scenarios: {
+    browse: {
+      executor: "constant-vus",
+      vus: 5,
+      duration: "1m",
+      exec: "browseScenario",
+    },
+    checkout: {
+      executor: "ramping-vus",
+      vus: 2,
+      rampUp: "10s",
+      duration: "30s",
+      exec: "checkoutScenario",
+    },
+  },
+  thresholds: {
+    "http_req_duration": ["p(95)<1000", "avg<500"],
+    "http_req_duration{label=Checkout Item}": ["avg<1500"],
+    "http_req_failed": ["rate<0.02"],
+  },
+  backends: [
+    {
+      type: "influxdb",
+      server: "http://localhost:8086/write?db=j5_metrics",
+      parameters: { application: "e-commerce-j5" }
+    }
+  ]
 };
 
-// 2. Base URL — applied to all samplers via HTTP Request Defaults
-export const baseUrl = "https://api.example.com";
+// Setup hook (runs once before main scenarios)
+export function setup() {
+  registerSampler(
+    httpSampler.get("API Health Check", "/api/health").assertStatus(200)
+  );
+}
 
-// 3. Default function — registers samplers
-export default function () {
-  registerSampler(httpSampler.get("My Request", "/api/endpoint"));
+// Named Scenario: Browse
+export function browseScenario() {
+  group("Catalog Flow", () => {
+    registerSampler(
+      httpSampler.get("Homepage", "/")
+    );
+    randomSleep("500ms", "1.5s");
+
+    registerSampler(
+      httpSampler.get("Catalog", "/catalog").assertStatus(200)
+    );
+    gaussianSleep("1s", "200ms");
+  });
+}
+
+// Named Scenario: Checkout
+export function checkoutScenario() {
+  group("Checkout Flow", () => {
+    registerSampler(
+      httpSampler.get("Cart", "/cart")
+    );
+    sleep("1s");
+
+    registerSampler(
+      httpSampler.post("Checkout Item", "/checkout", { body: { itemId: "99" } })
+        .assertStatus(200)
+    );
+  });
+}
+
+// Teardown hook (runs once after main scenarios)
+export function teardown() {
+  registerSampler(
+    httpSampler.post("Cleanup Session", "/api/logout")
+  );
 }
 ```
 
 ---
 
-## API Reference
+## 💻 CLI Command Reference
 
-### httpSampler
+### `j5 run <script>`
+Compiles your TypeScript script to a JMX file and runs it with Apache JMeter.
 
-```typescript
-httpSampler.get(name, path, config?)
-httpSampler.post(name, path, config?)
-httpSampler.put(name, path, config?)
-httpSampler.patch(name, path, config?)
-httpSampler.delete(name, path, config?)
-```
+*   `--dry-run`: Generate JMX only; do not execute JMeter.
+*   `--out <path>`: Custom destination path for the generated JMX.
+*   `--jtl <path>`: Custom path for the `.jtl` results file.
+*   `--jmeter-bin <path>`: Path to your JMeter binary executable (overrides `JMETER_HOME`).
+*   `--extra-args <args>`: Extra arguments to pass to the underlying JMeter CLI (e.g. `"--extra-args='-Dlog_level.jmeter=DEBUG'"`).
 
-**Config options:**
+### `j5 inspect <script>`
+Parses your test script and displays the complete test plan structure (Setup, Scenarios, Teardown, Thresholds, and Backends) directly in the console for instant inspection.
 
-```typescript
-{
-  headers?: Record<string, string>;
-  body?: string | Record<string, unknown>;  // objects are JSON-serialized
-  contentType?: string;                      // inferred from body type if omitted
-  followRedirects?: boolean;                 // default: true
-  connectTimeout?: number;                   // ms
-  responseTimeout?: number;                  // ms
-}
-```
+---
 
-**Extractors (chainable):**
+## 📚 API Reference
 
-```typescript
-.jsonExtract(varName, jsonPath, matchNo?)        // JSONPath extractor
-.regexExtract(varName, regex, matchNo?, default?) // Regex extractor
-.xpathExtract(varName, xpath)                     // XPath extractor
-.boundaryExtract(varName, leftBound, rightBound)  // Boundary extractor
-```
+### Http Samplers (`httpSampler`)
+Configure HTTP requests using method builders: `get`, `post`, `put`, `patch`, and `delete`.
 
-**Assertions (chainable):**
+#### Extraction Methods (Chainable)
+Extract values from responses and store them in JMeter variables:
+*   `.jsonExtract(varName, jsonPath, matchNo?)`: JSONPath extraction.
+*   `.regexExtract(varName, regex, matchNo?, default?)`: Regular Expression extraction.
+*   `.xpathExtract(varName, xpath)`: XPath extraction.
+*   `.boundaryExtract(varName, leftBoundary, rightBoundary)`: Left-and-right boundary extraction.
 
-```typescript
-.assertStatus(code)               // HTTP status code assertion
-.assertBodyContains(text)         // Response body contains text
-.assertBodyNotContains(text)      // Response body does not contain text
-.assertResponseTime(maxMs)        // Duration assertion in milliseconds
-```
+#### Assertion Methods (Chainable)
+Verify response correctness:
+*   `.assertStatus(code)`: Assert HTTP status matches the code.
+*   `.assertBodyContains(text)`: Assert body contains a specific string.
+*   `.assertBodyNotContains(text)`: Assert body does not contain a string.
+*   `.assertResponseTime(maxMs)`: Assert execution time is within a millisecond threshold.
 
-### csvDataSet
+### Think Times / Timers
+*   `sleep(duration)`: Fixed duration pause (e.g., `"2s"` or `"500ms"`).
+*   `randomSleep(delay, range)`: Pause with uniform random variance.
+*   `gaussianSleep(delay, range)`: Pause using a Gaussian distribution.
 
+### CSV Data Sets (`csvDataSet`)
+Parameterize requests using external CSV files.
 ```typescript
 const users = csvDataSet("./data/users.csv", {
-  variableNames?: string[];   // column names (inferred from header row if omitted)
-  delimiter?: string;         // default: ","
-  recycle?: boolean;          // default: true
-  stopThread?: boolean;       // stop thread on EOF, default: false
-  shareMode?: "all" | "group" | "thread";  // default: "all"
+  variableNames: ["username", "password"],
+  recycle: true,
+  shareMode: "all",
 });
+registerCsv(users);
 
-// Reference variables in headers/body/path:
-users.var("username")  // returns "${username}" — resolved by JMeter at runtime
-```
-
-### registerSampler / registerCsv
-
-```typescript
-import { registerSampler, registerCsv } from "jmeter-js";
-
-registerCsv(users);          // must be called at module level or in default fn
-registerSampler(builder);    // registers an httpSampler builder into the plan
+// Reference columns dynamically in samplers:
+users.var("username"); // -> "${username}" at runtime
 ```
 
 ---
 
-## Duration format
+## 📝 License
 
-Durations follow the pattern `<number><unit>`:
-
-| Unit | Example |
-|---|---|
-| `ms` | `500ms` |
-| `s` | `30s` |
-| `m` | `5m` |
-| `h` | `2h` |
-
----
-
-## Environment variables
-
-| Variable | Description |
-|---|---|
-| `JMETER_HOME` | Path to JMeter installation directory |
-
----
-
-## What gets generated
-
-For each script, jmeter-js generates a JMX with:
-
-- **Test Plan** with user-defined variables
-- **HTTP Request Defaults** (base URL, protocol, host, port)
-- **CSV Data Set Config** elements for each `csvDataSet()` call
-- **Thread Group** with scheduler (duration-based)
-- **HTTPSamplerProxy** for each registered sampler
-- **HeaderManager** per sampler (merged Content-Type + custom headers)
-- **Extractor** elements (JSON / Regex / XPath / Boundary) per sampler
-- **Assertion** elements (ResponseAssertion / DurationAssertion) per sampler
-- **Summary Report** listener writing to `results.jtl`
-
----
-
-## Roadmap
-
-- [ ] Think time / pacing (`sleep`, `thinkTime`)
-- [ ] Multiple thread groups per script
-- [ ] Gaussian random timer support
-- [ ] `setup` / `teardown` lifecycle hooks
-- [ ] InfluxDB / Prometheus backend listener
-- [ ] `jmeter-js convert` — JMX to jmeter-js script (reverse mode)
-- [ ] Plugin support (Feather Wand, etc.)
-
----
-
-## License
-
-MIT
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.

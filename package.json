@@ -1,5 +1,5 @@
 {
-  "name": "@dosa/j5",
+  "name": "@dosa.dev/j5",
   "version": "0.1.0",
   "description": "k6-style TypeScript DSL for Apache JMeter",
   "main": "dist/index.js",

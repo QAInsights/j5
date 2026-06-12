@@ -41,7 +41,7 @@ registerCsv(products);
 // ── Scenario ──────────────────────────────────────────────────────────────────
 
 export default function () {
-  // 1. Search products — regex extractor on HTML response
+  // 1. Search products, regex extractor on HTML response
   registerSampler(
     httpSampler
       .get("Search Products", "/search?q=${productId}", {
@@ -52,7 +52,7 @@ export default function () {
       .assertBodyContains("Add to Cart")
   );
 
-  // 2. Add to cart — boundary extractor for session ID
+  // 2. Add to cart, boundary extractor for session ID
   registerSampler(
     httpSampler
       .post("Add to Cart", "/cart/add", {
@@ -67,7 +67,7 @@ export default function () {
       .assertResponseTime(1500)
   );
 
-  // 3. View cart — JSON extractor for total
+  // 3. View cart, JSON extractor for total
   registerSampler(
     httpSampler
       .get("View Cart", "/cart/${cartId}", {
@@ -78,7 +78,7 @@ export default function () {
       .assertStatus(200)
   );
 
-  // 4. Checkout — PUT with full payload
+  // 4. Checkout, PUT with full payload
   registerSampler(
     httpSampler
       .put("Checkout", "/cart/${cartId}/checkout", {
@@ -98,7 +98,7 @@ export default function () {
       .assertResponseTime(10000)
   );
 
-  // 5. Clear cart — DELETE
+  // 5. Clear cart, DELETE
   registerSampler(
     httpSampler
       .delete("Clear Cart", "/cart/${cartId}", {

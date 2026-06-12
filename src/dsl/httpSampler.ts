@@ -62,7 +62,7 @@ export class HttpSamplerBuilder {
     leftBoundary: string,
     rightBoundary: string
   ): this {
-    // Store as "left||right" — serializer splits on "||"
+    // Store as "left||right", serializer splits on "||"
     this._extractors.push({
       type: "boundary",
       varName,

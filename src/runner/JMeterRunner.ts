@@ -90,7 +90,7 @@ function resolveJMeterBin(): string {
     if (fs.existsSync(bin)) return bin;
   }
 
-  // 2. PATH — just call "jmeter" directly
+  // 2. PATH, just call "jmeter" directly
   return isWindows() ? "jmeter.bat" : "jmeter";
 }
 

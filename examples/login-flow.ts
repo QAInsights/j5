@@ -38,7 +38,7 @@ registerCsv(users);
 // ── Scenario ──────────────────────────────────────────────────────────────────
 
 export default function () {
-  // Step 1: Login — extract token from JSON response
+  // Step 1: Login, extract token from JSON response
   const loginSampler = httpSampler
     .post("Login", "/api/login", {
       body: {
@@ -54,7 +54,7 @@ export default function () {
 
   registerSampler(loginSampler);
 
-  // Step 2: Dashboard — use extracted token in header
+  // Step 2: Dashboard, use extracted token in header
   const dashboardSampler = httpSampler
     .get("Dashboard", "/api/dashboard", {
       headers: {

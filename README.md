@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <b>Write JMeter performance tests like k6</b> — in modern TypeScript, with no GUI, no XML, and native support for lifecycle hooks, scenarios, thresholds, and real-time backend listeners.
+  <b>Write JMeter performance tests like k6</b>, written in modern TypeScript, with no GUI, no XML, and native support for lifecycle hooks, scenarios, thresholds, and real-time backend listeners.
 </p>
 
 ---
